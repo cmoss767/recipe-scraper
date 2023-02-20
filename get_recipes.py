@@ -9,7 +9,7 @@ import time
 URL = f"https://www.simplyrecipes.com/recipes-5090746"
 FILE_NAME = 'recipe_links_simplyrecipes.txt'
 EMPTY_LINKS = 'recipe_empty.txt'
-PATTERN = 'simplyrecipes.com/recipes/'
+PATTERN = 'simplyrecipes.com'
 
 
 def connect(url=URL):
@@ -39,10 +39,17 @@ def get_links_from_one_page(my_webpage):
     """
     recipe_links = []
     # we know that on this website we have 26 links per page
-    for i in range(1, 27):
+    for i in range(1):
         try:
-            recipe = my_webpage.find_element_by_xpath(
-                f'//*[@id="page"]/div[2]/div/div/div/div/div/ul/li[{i}]/div/div[2]/h2/a')
+         
+            recipe = my_webpage.find_element(By.XPATH,
+                f'//*[@id="mntl-card-list-items_2-0"]')
+            
+            # //*[@id="mntl-card-list-items_2-0-1"]
+            # //*[@id="mntl-card-list-items_2-0-2"]
+            # //*[@id="mntl-card-list-items_2-0-7"]
+
+            print( recipe)
         except:
             continue
         recipe_links.append(recipe.get_attribute("href"))
@@ -63,14 +70,6 @@ def get_links_from_site(recipe_driver, num_pages=132):
         page = get_links_from_one_page(recipe_driver)
         all_pages_links.append(page)
 
-        try:
-            # go to next page
-            recipe_driver.find_element(By.CLASS_NAME, 'rpg-next').click()
-            time.sleep(5)
-            print(f'page {i} is collected')
-        except NoSuchElementException:
-            print('I guess the page have no more recipes')
-            continue
     return all_pages_links
 
 
@@ -117,7 +116,7 @@ def get_recipe(link):
 
     # get ingredients
     try:
-        result_ingr = recipe_driver.find_element_by_xpath('//*[@id="sr-recipe-callout"]/div[4]')
+        result_ingr = recipe_driver.find_element(By.XPATH,'//*[@class="structured-ingredients__list-item"]')
 
     # check for recaptcha/invisible recaptcha
     except NoAlertPresentException:
@@ -125,29 +124,29 @@ def get_recipe(link):
         alert = recipe_driver.switch_to.alert
         alert.accept()
         print("alert accepted")
-        result_ingr = recipe_driver.find_element_by_xpath('//*[@id="sr-recipe-callout"]/div[4]')
+        result_ingr = recipe_driver.find_element(By.XPATH,'//*[@class="structured-ingredients__list-item"]')
 
     # get 'ul' elements with ingredient text
-    options_ingr = result_ingr.find_elements_by_tag_name("ul")
+    # options_ingr = result_ingr.find_element(By.TAG_NAME,"ul")
 
     #  we will get text only if 'ul' element is not empty [], ''. if it is --> check a div nearby
-    if not options_ingr:
-        result_ingr = recipe_driver.find_element_by_xpath('// *[ @ id = "sr-recipe-callout"] / div[3]')
-        options_ingr = result_ingr.find_elements_by_tag_name("ul")
-    for paragr in options_ingr:
-        ingredients_list.append(paragr.text)
+    # if not options_ingr:
+    #     result_ingr = recipe_driver.find_element(By.XPATH,'// *[ @ id = "sr-recipe-callout"] / div[3]')
+    #     options_ingr = result_ingr.find_element(By.TAG_NAME,"ul")
+    # for paragr in options_ingr:
+    #     ingredients_list.append(paragr.text)
 
     # get instructions paragraphs
-    result_instr = recipe_driver.find_element_by_xpath(
-        '//*[@id="sr-recipe-method"]/div')
-    options_instr = result_instr.find_elements_by_tag_name("p")
-    for paragraph in options_instr:
-        if paragraph.text != '':
-            instructions_list.append(paragraph.text.strip())
+    # result_instr = recipe_driver.find_element(By.XPATH,
+    #     '//*[@id="sr-recipe-method"]/div')
+    # options_instr = result_instr.find_element(By.TAG_NAME,"p")
+    # for paragraph in options_instr:
+    #     if paragraph.text != '':
+    #         instructions_list.append(paragraph.text.strip())
 
         # if paragraph.text is empty str we moving on to the next paragraph
-        else:
-            continue
+        # else:
+        #     continue
     recipe_driver.close()
 
     # create a dictionary with recipe and instructions text
