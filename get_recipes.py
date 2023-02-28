@@ -31,7 +31,7 @@ def connect(url=URL):
     return driver
 
 
-def get_links_from_one_page(my_webpage):
+def get_links_from_page(my_webpage):
     """
     To collect links for each recipe from one page
     :param my_webpage: link to page for scrapping: selenium obj
@@ -39,16 +39,14 @@ def get_links_from_one_page(my_webpage):
     """
     recipe_links = []
     # we know that on this website we have 26 links per page
-    for i in range(1):
+    for i in range(5):
         try:
-         
-            recipe = my_webpage.find_element(By.XPATH,
-                f'//*[@id="mntl-card-list-items_2-0"]')
-            
-            # //*[@id="mntl-card-list-items_2-0-1"]
-            # //*[@id="mntl-card-list-items_2-0-2"]
-            # //*[@id="mntl-card-list-items_2-0-7"]
-
+            if i < 1:
+                recipe = my_webpage.find_element(By.XPATH,
+                f'//*[@id="mntl-card-list-items_2-{i}"]')
+            else:
+                recipe = my_webpage.find_element(By.XPATH,
+                f'//*[@id="mntl-card-list-items_2-0-{i}"]')
             print( recipe)
         except:
             continue
@@ -56,7 +54,8 @@ def get_links_from_one_page(my_webpage):
     return recipe_links
 
 
-def get_links_from_site(recipe_driver, num_pages=132):
+
+def get_links_from_site(recipe_driver):
     """
     To list pages on website and collect links into list
     :param recipe_driver: obj  chrome driver
@@ -64,10 +63,10 @@ def get_links_from_site(recipe_driver, num_pages=132):
     :return: list of links
     """
     all_pages_links = []
-    for i in range(1, num_pages):
+    for i in range(1):
 
         # get links from one page
-        page = get_links_from_one_page(recipe_driver)
+        page = get_links_from_page(recipe_driver)
         all_pages_links.append(page)
 
     return all_pages_links
@@ -83,7 +82,7 @@ def extract_links_to_file(file_name):
     recipe_driver = connect()
 
     # collect links
-    recipe_links = get_links_from_site(recipe_driver)
+    recipe_links = get_links_from_one_page(recipe_driver)
 
     # write down links to the txt file
     output_recipe_links = open(file_name, 'w')
