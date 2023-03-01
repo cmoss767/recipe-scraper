@@ -47,7 +47,7 @@ def get_links_from_page(my_webpage):
             else:
                 recipe = my_webpage.find_element(By.XPATH,
                 f'//*[@id="mntl-card-list-items_2-0-{i}"]')
-            print( recipe)
+            
         except:
             continue
         recipe_links.append(recipe.get_attribute("href"))
@@ -55,21 +55,7 @@ def get_links_from_page(my_webpage):
 
 
 
-def get_links_from_site(recipe_driver):
-    """
-    To list pages on website and collect links into list
-    :param recipe_driver: obj  chrome driver
-    :param num_pages: int number of pages to scrap / default 132
-    :return: list of links
-    """
-    all_pages_links = []
-    for i in range(1):
 
-        # get links from one page
-        page = get_links_from_page(recipe_driver)
-        all_pages_links.append(page)
-
-    return all_pages_links
 
 
 def extract_links_to_file(file_name):
@@ -82,17 +68,18 @@ def extract_links_to_file(file_name):
     recipe_driver = connect()
 
     # collect links
-    recipe_links = get_links_from_one_page(recipe_driver)
+    recipe_links = get_links_from_page(recipe_driver)
+    print(recipe_links)
 
     # write down links to the txt file
     output_recipe_links = open(file_name, 'w')
     empty_links = open(EMPTY_LINKS, 'w')
-    for link_list in recipe_links:
-        for url in link_list:
-            if url.__contains__(PATTERN):
-                output_recipe_links.write(url + '\n')
-            else:
-                empty_links.write(url + '\n')
+    for url in recipe_links:
+        
+        if url.__contains__(PATTERN):
+            output_recipe_links.write(url + '\n')
+        else:
+            empty_links.write(url + '\n')
     output_recipe_links.close()
     empty_links.close()
 
@@ -115,7 +102,10 @@ def get_recipe(link):
 
     # get ingredients
     try:
-        result_ingr = recipe_driver.find_element(By.XPATH,'//*[@class="structured-ingredients__list-item"]')
+      
+      
+        
+        ingredients_list.append( recipe_driver.find_element(By.CLASS_NAME,"structured-ingredients__list-item").text) 
 
     # check for recaptcha/invisible recaptcha
     except NoAlertPresentException:
@@ -123,29 +113,22 @@ def get_recipe(link):
         alert = recipe_driver.switch_to.alert
         alert.accept()
         print("alert accepted")
-        result_ingr = recipe_driver.find_element(By.XPATH,'//*[@class="structured-ingredients__list-item"]')
+        result_ingr = recipe_driver.find_element(By.CLASS_NAME,"structured-ingredients__list-item")
 
-    # get 'ul' elements with ingredient text
-    # options_ingr = result_ingr.find_element(By.TAG_NAME,"ul")
 
-    #  we will get text only if 'ul' element is not empty [], ''. if it is --> check a div nearby
-    # if not options_ingr:
-    #     result_ingr = recipe_driver.find_element(By.XPATH,'// *[ @ id = "sr-recipe-callout"] / div[3]')
-    #     options_ingr = result_ingr.find_element(By.TAG_NAME,"ul")
-    # for paragr in options_ingr:
-    #     ingredients_list.append(paragr.text)
+        
 
     # get instructions paragraphs
-    # result_instr = recipe_driver.find_element(By.XPATH,
-    #     '//*[@id="sr-recipe-method"]/div')
-    # options_instr = result_instr.find_element(By.TAG_NAME,"p")
-    # for paragraph in options_instr:
-    #     if paragraph.text != '':
-    #         instructions_list.append(paragraph.text.strip())
+    result_instr = recipe_driver.find_element(By.XPATH,
+        '//*[@id="sr-recipe-method"]/div')
+    options_instr = result_instr.find_element(By.TAG_NAME,"p")
+    for paragraph in options_instr:
+        if paragraph.text != '':
+            instructions_list.append(paragraph.text.strip())
 
         # if paragraph.text is empty str we moving on to the next paragraph
-        # else:
-        #     continue
+        else:
+            continue
     recipe_driver.close()
 
     # create a dictionary with recipe and instructions text
