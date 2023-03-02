@@ -105,7 +105,7 @@ def get_recipe(link):
       
       
         
-        ingredients_list.append( recipe_driver.find_element(By.CLASS_NAME,"structured-ingredients__list-item").text) 
+        ingredients_list.append(recipe_driver.find_element(By.CLASS_NAME,"structured-ingredients__list-item").text) 
 
     # check for recaptcha/invisible recaptcha
     except NoAlertPresentException:
@@ -119,20 +119,25 @@ def get_recipe(link):
         
 
     # get instructions paragraphs
-    result_instr = recipe_driver.find_element(By.XPATH,
-        '//*[@id="sr-recipe-method"]/div')
-    options_instr = result_instr.find_element(By.TAG_NAME,"p")
-    for paragraph in options_instr:
-        if paragraph.text != '':
-            instructions_list.append(paragraph.text.strip())
+    result_instr = recipe_driver.find_elements(By.CLASS_NAME,"mntl-sc-block-group--LI")
+
+    for instruction in result_instr:
+
+        options_instr = instruction.find_elements(By.TAG_NAME,"p")
+        instructions_list.append(instruction.text.strip())
+        for options in options_instr:
+
+            if options != '':
+                instructions_list.append(options.text.strip())
+            else:
+                continue
 
         # if paragraph.text is empty str we moving on to the next paragraph
-        else:
-            continue
+    print(ingredients_list)
     recipe_driver.close()
 
     # create a dictionary with recipe and instructions text
-    json_file["Recipe"] = '\n\n'.join(ingredients_list)
+    json_file["Recipe"] = ''.join(ingredients_list)
     json_file['INSTRUCTIONS'] = '\n\n'.join(instructions_list)
 
     return json_file
